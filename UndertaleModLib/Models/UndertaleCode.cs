@@ -1075,7 +1075,7 @@ public class UndertaleInstruction : UndertaleObject, IGMInstruction
     bool IGMInstruction.PopWithContextExit => JumpOffsetPopenvExitMagic;
     byte IGMInstruction.DuplicationSize => Extra;
     byte IGMInstruction.DuplicationSize2 => (byte)(((byte)ComparisonKind & 0x7F) >> 3);
-    int IGMInstruction.ArgumentCount => ArgumentsCount;
+    int IGMInstruction.ArgumentCount => (Kind == Opcode.Call) ? ArgumentsCount : Extra;
     int IGMInstruction.PopSwapSize => SwapExtra;
 }
 
