@@ -63,6 +63,16 @@ namespace UndertaleModTool
             }
         }
 
+        public static bool NewDecompilerEnabled
+        {
+            get => Settings.Instance.NewDecompilerEnabled;
+            set
+            {
+                Settings.Instance.NewDecompilerEnabled = value;
+                Settings.Save();
+            }
+        }
+
         public static bool UseGMLCache
         {
             get => Settings.Instance.UseGMLCache;

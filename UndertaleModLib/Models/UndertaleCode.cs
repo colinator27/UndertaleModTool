@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Underanalyzer;
 using UndertaleModLib.Compiler;
 using UndertaleModLib.Decompiler;
 using UndertaleModLib.Util;
@@ -13,12 +14,11 @@ namespace UndertaleModLib.Models;
 /// <summary>
 /// A bytecode instruction.
 /// </summary>
-public class UndertaleInstruction : UndertaleObject
+public class UndertaleInstruction : UndertaleObject, IGMInstruction
 {
     /// <summary>
     /// Possible opcodes an instruction can use.
     /// </summary>
-    //TODO: document all these. i ain't smart enough to understand these.
     public enum Opcode : byte
     {
         Conv = 0x07, // Push((Types.Second)Pop) // DoubleTypeInstruction
@@ -1052,6 +1052,31 @@ public class UndertaleInstruction : UndertaleObject
             return 2;
         return 1;
     }
+
+
+    // Underanalyzer implementations
+    int IGMInstruction.Address => (int)Address * 4;
+    IGMInstruction.Opcode IGMInstruction.Kind => (IGMInstruction.Opcode)Kind;
+    IGMInstruction.ExtendedOpcode IGMInstruction.ExtKind => (IGMInstruction.ExtendedOpcode)Value;
+    IGMInstruction.ComparisonType IGMInstruction.ComparisonKind => (IGMInstruction.ComparisonType)ComparisonKind;
+    IGMInstruction.DataType IGMInstruction.Type1 => (IGMInstruction.DataType)Type1;
+    IGMInstruction.DataType IGMInstruction.Type2 => (IGMInstruction.DataType)Type2;
+    IGMInstruction.InstanceType IGMInstruction.InstType => (IGMInstruction.InstanceType)TypeInst;
+    IGMVariable IGMInstruction.Variable => Destination?.Target ?? (Value as Reference<UndertaleVariable>)?.Target;
+    IGMFunction IGMInstruction.Function => Function?.Target ?? (Value as Reference<UndertaleFunction>)?.Target;
+    IGMInstruction.VariableType IGMInstruction.ReferenceVarType => (IGMInstruction.VariableType)(Destination?.Type ?? (Value as Reference<UndertaleVariable>)?.Type);
+    double IGMInstruction.ValueDouble => (double)Value;
+    short IGMInstruction.ValueShort => (short)Value;
+    int IGMInstruction.ValueInt => (int)Value;
+    long IGMInstruction.ValueLong => (long)Value;
+    bool IGMInstruction.ValueBool => (bool)Value;
+    IGMString IGMInstruction.ValueString => ((UndertaleResourceById<UndertaleString, UndertaleChunkSTRG>)Value).Resource;
+    int IGMInstruction.BranchOffset => JumpOffset * 4;
+    bool IGMInstruction.PopWithContextExit => JumpOffsetPopenvExitMagic;
+    byte IGMInstruction.DuplicationSize => Extra;
+    byte IGMInstruction.DuplicationSize2 => (byte)(((byte)ComparisonKind & 0x7F) >> 3);
+    int IGMInstruction.ArgumentCount => ArgumentsCount;
+    int IGMInstruction.PopSwapSize => SwapExtra;
 }
 
 public static class UndertaleInstructionUtil
@@ -1093,7 +1118,7 @@ public static class UndertaleInstructionUtil
 /// A code entry in a data file.
 /// </summary>
 [PropertyChanged.AddINotifyPropertyChangedInterface]
-public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, IDisposable
+public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, IDisposable, IGMCode
 {
     /// <summary>
     /// The name of the code entry.
@@ -1497,4 +1522,16 @@ public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, I
         Name = null;
         _unsupportedBuffer = null;
     }
+
+    // Underanalyzer implementations
+    IGMString IGMCode.Name => Name;
+    int IGMCode.Length => (int)Length;
+    int IGMCode.InstructionCount => Instructions.Count;
+    int IGMCode.StartOffset => (int)Offset;
+    IGMCode IGMCode.Parent => ParentEntry;
+    int IGMCode.ChildCount => ChildEntries.Count;
+    int IGMCode.ArgumentCount => ArgumentsCount;
+    int IGMCode.LocalCount => (int)LocalsCount;
+    public IGMInstruction GetInstruction(int index) => Instructions[index];
+    public IGMCode GetChild(int index) => ChildEntries[index];
 }

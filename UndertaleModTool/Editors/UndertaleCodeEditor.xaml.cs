@@ -518,7 +518,9 @@ namespace UndertaleModTool
             gettext = new Dictionary<string, string>();
             string[] decompilationOutput;
             if (!SettingsWindow.ProfileModeEnabled)
+            {
                 decompilationOutput = Decompiler.Decompile(gettextCode, new GlobalDecompileContext(null, false)).Replace("\r\n", "\n").Split('\n');
+            }
             else
             {
                 try
@@ -652,7 +654,14 @@ namespace UndertaleModTool
                         string path = Path.Combine(TempPath, code.Name.Content + ".gml");
                         if (!SettingsWindow.ProfileModeEnabled || !File.Exists(path))
                         {
-                            decompiled = Decompiler.Decompile(code, context, (msg) => { dialog.Message = msg; });
+                            if (SettingsWindow.NewDecompilerEnabled)
+                            {
+                                decompiled = new Underanalyzer.Decompiler.DecompileContext(context, code).DecompileToString();
+                            }
+                            else
+                            {
+                                decompiled = Decompiler.Decompile(code, context, (msg) => { dialog.Message = msg; });
+                            }
                         }
                         else
                             decompiled = File.ReadAllText(path);
