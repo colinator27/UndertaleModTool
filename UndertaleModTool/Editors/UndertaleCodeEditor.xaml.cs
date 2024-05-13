@@ -1331,7 +1331,7 @@ namespace UndertaleModTool
                             else
                             {
                                 // Resolve 2.3 sub-functions for their parent entry
-                                if (data.KnownSubFunctions?.TryGetValue(nameText, out UndertaleFunction f) == true)
+                                if (data.GlobalFunctions?.NameToFunction?.TryGetValue(nameText, out Underanalyzer.IGMFunction f) == true)
                                 {
                                     ScriptsDict.TryGetValue(f.Name.Content, out val);
                                     val = (val as UndertaleScript)?.Code?.ParentEntry;

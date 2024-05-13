@@ -1467,7 +1467,7 @@ namespace UndertaleModTool
             if (decompileContext is null)
                 decompileContext = new(() => new GlobalDecompileContext(Data, false));
 
-            if (Data.KnownSubFunctions is null) //if we run script before opening any code
+            if (Data.GlobalFunctions is null) //if we run script before opening any code
             {
                 SetProgressBar(null, "Building the cache of all sub-functions...", 0, 0);
                 await Task.Run(() => Decompiler.BuildSubFunctionCache(Data));

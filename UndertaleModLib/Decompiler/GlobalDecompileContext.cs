@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using Underanalyzer;
+using Underanalyzer.Decompiler;
 using UndertaleModLib.Models;
 using static UndertaleModLib.Models.UndertaleRoom;
 
@@ -38,11 +39,13 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
     public bool UsingGMLv2 => Data?.IsVersionAtLeast(2, 3) ?? false;
     public bool Bytecode14OrLower => (Data?.GeneralInfo?.BytecodeVersion ?? 15) <= 14;
     public bool UsingGMS2OrLater => Data?.IsVersionAtLeast(2) ?? false;
+    public IGlobalFunctions GlobalFunctions => Data?.GlobalFunctions;
 
     public GlobalDecompileContext(UndertaleData data, bool enableStringLabels)
     {
         this.Data = data;
         this.EnableStringLabels = enableStringLabels;
+        Decompiler.BuildSubFunctionCache(data);
     }
 
     public void ClearDecompilationCache()
@@ -53,6 +56,7 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
         AnonymousFunctionNameCache.Clear();
     }
 
+    // Implementation of Underanalyzer methods
     public string GetAssetName(int assetIndex, AssetType assetType)
     {
         if (assetIndex < 0)
