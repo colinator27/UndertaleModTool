@@ -216,6 +216,7 @@ namespace UndertaleModTool
             if (code is null)
             {
                 code = new UndertaleCode();
+                code.UndertaleData = Data;
                 code.Name = Data.Strings.MakeString(codeName);
                 Data.Code.Add(code);
             }
