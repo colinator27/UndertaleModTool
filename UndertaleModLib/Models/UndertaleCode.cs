@@ -1101,7 +1101,7 @@ public class UndertaleInstruction : UndertaleObject, IGMInstruction
     int IGMInstruction.ArgumentCount => (Kind == Opcode.Call) ? ArgumentsCount : Extra;
     int IGMInstruction.PopSwapSize => SwapExtra;
     int IGMInstruction.AssetReferenceId => IntArgument & 0xffffff;
-    AssetType IGMInstruction.AssetReferenceType => AdaptAssetType(Entry.UndertaleData, IntArgument >> 24);
+    AssetType IGMInstruction.GetAssetReferenceType(IGameContext context) => AdaptAssetType((context as GlobalDecompileContext).Data, IntArgument >> 24);
 
     /// <summary>
     /// Adapts asset type IDs to the <see cref="Underanalyzer.AssetType"/> enum, across versions.
@@ -1261,7 +1261,6 @@ public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, I
     public UndertaleCode ParentEntry { get; set; } = null;
     public List<UndertaleCode> ChildEntries { get; set; } = new List<UndertaleCode>();
 
-    public UndertaleData UndertaleData { get; set; }
 
     internal uint _bytecodeAbsoluteAddress;
     internal byte[] _unsupportedBuffer;
@@ -1326,8 +1325,6 @@ public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, I
     /// <inheritdoc />
     public void Unserialize(UndertaleReader reader)
     {
-        UndertaleData = reader.undertaleData;
-
         Name = reader.ReadUndertaleString();
         Length = reader.ReadUInt32();
         if (reader.undertaleData.UnsupportedBytecodeVersion)
@@ -1630,7 +1627,6 @@ public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, I
         Instructions?.Clear();
         ChildEntries = new();
         Name = null;
-        UndertaleData = null;
         _unsupportedBuffer = null;
     }
 

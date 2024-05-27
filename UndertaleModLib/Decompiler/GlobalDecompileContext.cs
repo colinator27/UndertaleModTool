@@ -39,6 +39,7 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
     public bool UsingGMLv2 => Data?.IsVersionAtLeast(2, 3) ?? false;
     public bool Bytecode14OrLower => (Data?.GeneralInfo?.BytecodeVersion ?? 15) <= 14;
     public bool UsingGMS2OrLater => Data?.IsVersionAtLeast(2) ?? false;
+    public bool UsingFinallyBeforeThrow => !(Data?.IsVersionAtLeast(2024, 6) ?? false);
     public IGlobalFunctions GlobalFunctions => Data?.GlobalFunctions;
 
     public GlobalDecompileContext(UndertaleData data, bool enableStringLabels)

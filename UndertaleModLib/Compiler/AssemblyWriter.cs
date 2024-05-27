@@ -260,8 +260,7 @@ namespace UndertaleModLib.Compiler
                                     ParentEntry = compileContext.OriginalCode,
                                     Offset = patch.Offset,
                                     ArgumentsCount = (ushort)patch.ArgCount,
-                                    LocalsCount = compileContext.OriginalCode.LocalsCount, // todo: use just the locals for the individual script
-                                    UndertaleData = compileContext.Data
+                                    LocalsCount = compileContext.OriginalCode.LocalsCount // todo: use just the locals for the individual script
                                 };
                                 compileContext.OriginalCode.ChildEntries.Add(childEntry);
                                 int childEntryIndex = compileContext.Data.Code.IndexOf(compileContext.OriginalCode) + compileContext.OriginalCode.ChildEntries.Count;

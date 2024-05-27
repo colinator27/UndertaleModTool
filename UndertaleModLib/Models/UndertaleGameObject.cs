@@ -297,8 +297,7 @@ public class UndertaleGameObject : UndertaleNamedResource, INotifyPropertyChange
             code = new UndertaleCode()
             {
                 Name = name,
-                LocalsCount = 1,
-                UndertaleData = data
+                LocalsCount = 1
             };
             action.CodeId = code;
             data.Code.Add(code);
