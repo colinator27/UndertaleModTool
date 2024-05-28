@@ -60,6 +60,11 @@
             <Word>mod</Word>
             <Word>div</Word>
             <Word>@@this@@</Word>
+            <Word>throw</Word>
+            <Word>static</Word>
+            <Word>try</Word>
+            <Word>catch</Word>
+            <Word>finally</Word>
         </Keywords>
 
         <!-- Some macros -->
