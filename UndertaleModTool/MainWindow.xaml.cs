@@ -253,7 +253,8 @@ namespace UndertaleModTool
                                 .AddReferences(typeof(UndertaleObject).GetTypeInfo().Assembly,
                                                 GetType().GetTypeInfo().Assembly,
                                                 typeof(JsonConvert).GetTypeInfo().Assembly,
-                                                typeof(System.Text.RegularExpressions.Regex).GetTypeInfo().Assembly)
+                                                typeof(System.Text.RegularExpressions.Regex).GetTypeInfo().Assembly,
+                                                typeof(Underanalyzer.Decompiler.DecompileContext).Assembly)
                                 .WithEmitDebugInformation(true); //when script throws an exception, add a exception location (line number)
             });
 
@@ -2591,8 +2592,7 @@ namespace UndertaleModTool
 
                 ScriptPath = path;
 
-                string compatScriptText = Regex.Replace(scriptText, @"\bDecompileContext(?!\.)\b", "GlobalDecompileContext", RegexOptions.None);
-                object result = await CSharpScript.EvaluateAsync(compatScriptText, scriptOptions, this, typeof(IScriptInterface));
+                object result = await CSharpScript.EvaluateAsync(scriptText, scriptOptions, this, typeof(IScriptInterface));
 
                 if (FinishedMessageEnabled)
                 {
