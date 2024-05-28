@@ -1125,6 +1125,7 @@ public class UndertaleInstruction : UndertaleObject, IGMInstruction
                 10 => AssetType.AnimCurve,
                 11 => AssetType.ParticleSystem,
                 13 => AssetType.Background,
+                14 => AssetType.RoomInstance,
                 _ => throw new Exception($"Unknown asset type {type}")
             };
         }
@@ -1144,6 +1145,7 @@ public class UndertaleInstruction : UndertaleObject, IGMInstruction
             11 => AssetType.Sequence,
             12 => AssetType.AnimCurve,
             13 => AssetType.ParticleSystem,
+            14 => AssetType.RoomInstance,
             _ => throw new Exception($"Unknown asset type {type}")
         };
     }

@@ -145,6 +145,8 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
                     return null;
                 }
                 return Data.ParticleSystems[assetIndex].Name?.Content;
+            case AssetType.RoomInstance:
+                return $"inst_id_{assetIndex}";
         }
 
         return null;
