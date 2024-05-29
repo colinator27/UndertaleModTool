@@ -65,6 +65,7 @@
             <Word>try</Word>
             <Word>catch</Word>
             <Word>finally</Word>
+            <Word>enum</Word>
         </Keywords>
 
         <!-- Some macros -->
