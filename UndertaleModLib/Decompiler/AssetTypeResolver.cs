@@ -570,8 +570,15 @@ namespace UndertaleModLib.Decompiler
         {
             data.MacroTypeRegistry = new();
 
+            // TODO: make proper file/manifest for all games to use, not just UT/DR, and also not these specific names
+
             // Read registry data files
+            string lowerName = data?.GeneralInfo?.DisplayName?.Content.ToLower(CultureInfo.InvariantCulture) ?? "";
             data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("gamemaker.json"));
+            if (lowerName.StartsWith("undertale", StringComparison.InvariantCulture))
+            {
+                data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("undertale.json"));
+            }
 
             // TODO: gut the rest of the following code once all data is transferred
 
@@ -1064,9 +1071,6 @@ namespace UndertaleModLib.Decompiler
                 { "visible", AssetIDType.Boolean }
 
             };
-
-            // TODO: make proper file/manifest for all games to use, not just UT/DR, and also not these specific names
-            string lowerName = data?.GeneralInfo?.DisplayName?.Content.ToLower(CultureInfo.InvariantCulture);
 
             // Just Undertale
             if (lowerName != null && lowerName.StartsWith("undertale", StringComparison.InvariantCulture))

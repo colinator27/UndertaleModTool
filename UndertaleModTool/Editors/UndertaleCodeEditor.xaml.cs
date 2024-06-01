@@ -517,9 +517,11 @@ namespace UndertaleModTool
         {
             gettext = new Dictionary<string, string>();
             string[] decompilationOutput;
+            GlobalDecompileContext context = new GlobalDecompileContext(null, false);
             if (!SettingsWindow.ProfileModeEnabled)
             {
-                decompilationOutput = Decompiler.Decompile(gettextCode, new GlobalDecompileContext(null, false)).Replace("\r\n", "\n").Split('\n');
+                //decompilationOutput = Decompiler.Decompile(gettextCode, new GlobalDecompileContext(null, false)).Replace("\r\n", "\n").Split('\n');
+                decompilationOutput = new Underanalyzer.Decompiler.DecompileContext(context, gettextCode).DecompileToString().Split('\n');
             }
             else
             {
@@ -529,11 +531,11 @@ namespace UndertaleModTool
                     if (File.Exists(path))
                         decompilationOutput = File.ReadAllText(path).Replace("\r\n", "\n").Split('\n');
                     else
-                        decompilationOutput = Decompiler.Decompile(gettextCode, new GlobalDecompileContext(null, false)).Replace("\r\n", "\n").Split('\n');
+                        decompilationOutput = new Underanalyzer.Decompiler.DecompileContext(context, gettextCode).DecompileToString().Split('\n');
                 }
                 catch
                 {
-                    decompilationOutput = Decompiler.Decompile(gettextCode, new GlobalDecompileContext(null, false)).Replace("\r\n", "\n").Split('\n');
+                    decompilationOutput = new Underanalyzer.Decompiler.DecompileContext(context, gettextCode).DecompileToString().Split('\n');
                 }
             }
             Regex textdataRegex = new Regex("^ds_map_add\\(global\\.text_data_en, \\\"(.*)\\\", \\\"(.*)\\\"\\)", RegexOptions.Compiled);

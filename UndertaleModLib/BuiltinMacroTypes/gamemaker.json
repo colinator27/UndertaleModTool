@@ -273,7 +273,6 @@
       },
       "Constant.OperatingSystem": {
         "os_unknown": -1,
-        "os_win32": 0,
         "os_windows": 0,
         "os_macosx": 1,
         "os_psp": 2,
