@@ -979,7 +979,6 @@
       "event_perform": {
         "MacroType": "Union",
         "Macros": [
-          [ "Constant.EventType", null ],
           [
             {
               "MacroType": "Intersect",
@@ -1092,13 +1091,13 @@
               ]
             },
             "Constant.VirtualKey"
-          ]
+          ],
+          [ "Constant.EventType", null ]
         ]
       },
       "event_perform_object": {
         "MacroType": "Union",
         "Macros": [
-          [ "Asset.Object", "Constant.EventType", null ],
           [
             "Asset.Object",
             {
@@ -1218,7 +1217,8 @@
               ]
             },
             "Constant.VirtualKey"
-          ]
+          ],
+          [ "Asset.Object", "Constant.EventType", null ]
         ]
       },
       "event_perform_async": [ "Constant.AsyncEventType", null ],
