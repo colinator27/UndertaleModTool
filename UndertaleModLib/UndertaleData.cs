@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.Macros;
 using UndertaleModLib.Compiler;
 using UndertaleModLib.Models;
 
@@ -337,6 +338,11 @@ namespace UndertaleModLib
         /// Cache for 2.3-style functions defined in global scripts. Can be re-built by setting this to null.
         /// </summary>
         public IGlobalFunctions GlobalFunctions;
+        
+        /// <summary>
+        /// Registry for macro types and their resolvers, for this game.
+        /// </summary>
+        public MacroTypeRegistry MacroTypeRegistry;
 
         //Profile mode related properties
 
@@ -655,6 +661,7 @@ namespace UndertaleModLib
             // Clear other references
             FORM = null;
             GlobalFunctions = null;
+            MacroTypeRegistry = null;
             GMLCache = null;
             GMLCacheFailed = null;
             GMLCacheChanged = new();

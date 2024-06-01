@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Reflection;
+using Underanalyzer.Decompiler.Macros;
 using UndertaleModLib.Models;
 
 namespace UndertaleModLib.Decompiler
@@ -552,9 +555,25 @@ namespace UndertaleModLib.Decompiler
             return null;
         }
 
+        private static ReadOnlySpan<char> ReadMacroTypesFile(string filename)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string resourceName = $"UndertaleModLib.BuiltinMacroTypes.{filename}";
+
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using StreamReader reader = new(stream);
+            return reader.ReadToEnd();
+        }
+
         // Properly initializes per-project/game
         public static void InitializeTypes(UndertaleData data)
         {
+            data.MacroTypeRegistry = new();
+
+            // Read registry data files
+            data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("gamemaker.json"));
+
+            // TODO: gut the rest of the following code once all data is transferred
 
             ContextualAssetResolver.Initialize(data);
 

@@ -34,10 +34,12 @@
     <PackageReference Include="System.Drawing.Common" Version="5.0.3" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="BuiltinMacroTypes\gamemaker.json" />
     <None Remove="version.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="gitversion.txt" />
+    <EmbeddedResource Include="BuiltinMacroTypes\gamemaker.json" />
     <EmbeddedResource Include="gitversion.txt" />
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using Underanalyzer;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.Macros;
 using UndertaleModLib.Models;
 using static UndertaleModLib.Models.UndertaleRoom;
 
@@ -41,6 +42,10 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
     public bool UsingGMS2OrLater => Data?.IsVersionAtLeast(2) ?? false;
     public bool UsingFinallyBeforeThrow => !(Data?.IsVersionAtLeast(2024, 6) ?? false);
     public IGlobalFunctions GlobalFunctions => Data?.GlobalFunctions;
+    public bool UsingTypedBooleans => Data?.IsVersionAtLeast(2, 3, 7) ?? false;
+    public bool UsingAssetReferences => Data?.IsVersionAtLeast(2023, 8) ?? false;
+    public bool UsingRoomInstanceReferences => Data?.IsVersionAtLeast(2024, 2) ?? false;
+    public MacroTypeRegistry MacroTypeRegistry => Data?.MacroTypeRegistry;
 
     public GlobalDecompileContext(UndertaleData data, bool enableStringLabels)
     {
@@ -146,6 +151,10 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
                 }
                 return Data.ParticleSystems[assetIndex].Name?.Content;
             case AssetType.RoomInstance:
+                if (assetIndex < 100000)
+                {
+                    return null;
+                }
                 return $"inst_id_{assetIndex}";
         }
 
