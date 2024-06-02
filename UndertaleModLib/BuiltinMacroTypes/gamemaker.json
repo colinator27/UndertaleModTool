@@ -606,7 +606,8 @@
       "mouse_button": "Constant.MouseButton",
       "mouse_last_button": "Constant.MouseButton",
       "os_type": "Constant.OperatingSystem",
-      "event_type": "Constant.EventType"
+      "event_type": "Constant.EventType",
+      "instance_id": "Id.InstanceOrObject"
     },
     "FunctionArguments": {
       "action_create_object": [ "Asset.Object", null, null ],
@@ -616,6 +617,7 @@
       "instance_change": [ "Asset.Object", "Bool" ],
       "instance_copy": [ "Bool" ],
       "instance_create": [ null, null, "Asset.Object" ],
+      "gml_Script_instance_create": [ null, null, "Asset.Object" ],
       "instance_destroy": [ "Asset.Object", "Bool" ],
       "instance_exists": [ "Asset.Object" ],
       "instance_find": [ "Asset.Object", null ],
@@ -630,8 +632,20 @@
       "instance_deactivate_object": [ "Id.InstanceOrObject" ],
       "instance_activate_region": [ null, null, null, null, "Bool" ],
       "instance_deactivate_region": [ null, null, null, null, "Bool", "Bool" ],
-      "instance_create_depth": [ null, null, null, "Asset.Object" ],
-      "instance_create_layer": [ null, null, null, "Asset.Object" ],
+      "instance_create_depth": {
+        "MacroType": "Union",
+        "Macros": [
+          [ null, null, null, "Asset.Object" ],
+          [ null, null, null, "Asset.Object", null ]
+        ]
+      },
+      "instance_create_layer": {
+        "MacroType": "Union",
+        "Macros": [
+          [ null, null, null, "Asset.Object" ],
+          [ null, null, null, "Asset.Object", null ]
+        ]
+      },
       "sprite_get_name": [ "Asset.Sprite" ],
       "sprite_get_number": [ "Asset.Sprite" ],
       "sprite_get_width": [ "Asset.Sprite" ],
@@ -841,6 +855,7 @@
       "draw_roundrect_colour_ext": [ null, null, null, null, null, null, "Constant.Color", "Constant.Color", null ],
       "draw_healthbar": [ null, null, null, null, null, "Constant.Color", "Constant.Color", "Constant.Color", null, null, null ],
       "d3d_set_fog": [ "Bool", "Constant.Color", null, null ],
+      "gml_Script_d3d_set_fog": [ "Bool", "Constant.Color", null, null ],
       "gpu_set_fog": [ "Bool", "Constant.Color", null, null ],
       "layer_script_begin": [ null, "Asset.Script" ],
       "layer_background_create": [ null, "Asset.Sprite" ],

@@ -579,6 +579,10 @@ namespace UndertaleModLib.Decompiler
             {
                 data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("undertale.json"));
             }
+            if (lowerName == "survey_program" || lowerName.StartsWith("deltarune", StringComparison.InvariantCulture))
+            {
+                data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("deltarune.json"));
+            }
 
             // TODO: gut the rest of the following code once all data is transferred
 
