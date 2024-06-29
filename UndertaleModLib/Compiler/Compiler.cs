@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UndertaleModLib.Models;
 using static UndertaleModLib.Compiler.Compiler.AssemblyWriter;
-using AssetRefType = UndertaleModLib.Decompiler.Decompiler.ExpressionAssetRef.RefType;
+using static UndertaleModLib.Util.AssetReferenceTypes;
 
 namespace UndertaleModLib.Compiler
 {
@@ -85,21 +85,21 @@ namespace UndertaleModLib.Compiler
         private void MakeAssetDictionary()
         {
             assetIds.Clear();
-            AddAssetsFromList(Data?.GameObjects, AssetRefType.Object);
-            AddAssetsFromList(Data?.Sprites, AssetRefType.Sprite);
-            AddAssetsFromList(Data?.Sounds, AssetRefType.Sound);
-            AddAssetsFromList(Data?.Backgrounds, AssetRefType.Background);
-            AddAssetsFromList(Data?.Paths, AssetRefType.Path);
-            AddAssetsFromList(Data?.Fonts, AssetRefType.Font);
-            AddAssetsFromList(Data?.Timelines, AssetRefType.Timeline);
+            AddAssetsFromList(Data?.GameObjects, RefType.Object);
+            AddAssetsFromList(Data?.Sprites, RefType.Sprite);
+            AddAssetsFromList(Data?.Sounds, RefType.Sound);
+            AddAssetsFromList(Data?.Backgrounds, RefType.Background);
+            AddAssetsFromList(Data?.Paths, RefType.Path);
+            AddAssetsFromList(Data?.Fonts, RefType.Font);
+            AddAssetsFromList(Data?.Timelines, RefType.Timeline);
             if (!GMS2_3)
-                AddAssetsFromList(Data?.Scripts, AssetRefType.Object /* not actually used */);
-            AddAssetsFromList(Data?.Shaders, AssetRefType.Shader);
-            AddAssetsFromList(Data?.Rooms, AssetRefType.Room);
-            AddAssetsFromList(Data?.AudioGroups, AssetRefType.Sound /* apparently? */);
-            AddAssetsFromList(Data?.AnimationCurves, AssetRefType.AnimCurve);
-            AddAssetsFromList(Data?.Sequences, AssetRefType.Sequence);
-            AddAssetsFromList(Data?.ParticleSystems, AssetRefType.ParticleSystem);
+                AddAssetsFromList(Data?.Scripts, RefType.Script /* not actually used */);
+            AddAssetsFromList(Data?.Shaders, RefType.Shader);
+            AddAssetsFromList(Data?.Rooms, RefType.Room);
+            AddAssetsFromList(Data?.AudioGroups, RefType.Sound /* apparently? */);
+            AddAssetsFromList(Data?.AnimationCurves, RefType.AnimCurve);
+            AddAssetsFromList(Data?.Sequences, RefType.Sequence);
+            AddAssetsFromList(Data?.ParticleSystems, RefType.ParticleSystem);
 
             scripts.Clear();
             if (Data?.Scripts != null)
@@ -124,7 +124,7 @@ namespace UndertaleModLib.Compiler
             }
         }
 
-        private void AddAssetsFromList<T>(IList<T> list, AssetRefType type) where T : UndertaleNamedResource
+        private void AddAssetsFromList<T>(IList<T> list, RefType type) where T : UndertaleNamedResource
         {
             if (list == null)
                 return;
@@ -136,7 +136,7 @@ namespace UndertaleModLib.Compiler
                     if (name != null)
                     {
                         // Typed asset refs pack their type into the ID
-                        assetIds[name] = (i & 0xffffff) | (((int)type & 0x7f) << 24);
+                        assetIds[name] = (i & 0xffffff) | ((ConvertFromRefType(Data, type) & 0x7f) << 24);
                     }
                 }
             }

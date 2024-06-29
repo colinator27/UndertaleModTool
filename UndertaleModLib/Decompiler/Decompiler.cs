@@ -727,7 +727,7 @@ namespace UndertaleModLib.Decompiler
                                         stack.Push(new ExpressionConstant(UndertaleInstruction.DataType.Int32, instr.Function));
                                         break;
                                     }
-                                    stack.Push(new ExpressionAssetRef(instr.IntArgument));
+                                    stack.Push(new ExpressionAssetRef(context.GlobalContext.Data, instr.IntArgument));
                                     break;
                             }
                         }
