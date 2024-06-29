@@ -1065,6 +1065,9 @@ namespace UndertaleModLib.Compiler
                     case Parser.Statement.StatementKind.Exit:
                         AssembleExit(cw);
                         break;
+                    case Parser.Statement.StatementKind.Enum:
+                        // No assembly logic for this
+                        break;
                     default:
                         AssemblyWriterError(cw, "Expected a statement, none found", s.Token);
                         break;

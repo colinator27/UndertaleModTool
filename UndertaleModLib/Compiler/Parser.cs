@@ -440,6 +440,7 @@ namespace UndertaleModLib.Compiler
                 if ((context.Data?.GeneralInfo?.BytecodeVersion ?? 15) >= 15)
                     context.LocalVars["arguments"] = "arguments";
                 context.GlobalVars.Clear();
+                context.EnumStatements.Clear();
                 context.Enums.Clear();
                 hasError = false;
 
@@ -550,6 +551,9 @@ namespace UndertaleModLib.Compiler
                 rootBlock = ParseBlock(context, true);
                 if (hasError)
                     return null;
+
+                // Resolve all enum values to their constants
+                ResolveEnumDeclarations(context);
 
                 return rootBlock;
             }
@@ -837,11 +841,8 @@ namespace UndertaleModLib.Compiler
 
             private static Statement ParseEnum(CompileContext context)
             {
-                ReportCodeError("Enums not currently supported.", true);
-                return null;
-                /*
                 Statement result = new Statement(Statement.StatementKind.Enum, EnsureTokenKind(TokenKind.Enum).Token);
-                Dictionary<string, int> values = new Dictionary<string, int>();
+                Dictionary<string, long?> values = new Dictionary<string, long?>();
 
                 Statement name = EnsureTokenKind(TokenKind.ProcVariable);
                 if (name == null)
@@ -851,17 +852,19 @@ namespace UndertaleModLib.Compiler
                 result.Text = name.Text;
                 result.ID = name.ID;
 
-                if (EnsureTokenKind(TokenKind.OpenBlock) == null) return null;
+                if (EnsureTokenKind(TokenKind.OpenBlock) == null) 
+                    return null;
 
-                if (Enums.ContainsKey(name.Text))
+                if (context.Enums.ContainsKey(name.Text))
                 {
                     ReportCodeError("Enum \"" + name.Text + "\" is defined more than once.", name.Token, true);
-                } else
+                } 
+                else
                 {
-                    Enums[name.Text] = values;
+                    context.Enums[name.Text] = values;
+                    context.EnumStatements.Add((name.Text, result));
                 }
 
-                int incrementingValue = 0;
                 while (!hasError && !IsNextToken(TokenKind.CloseBlock))
                 {
                     Statement val = new Statement(Statement.StatementKind.VariableName, remainingStageOne.Dequeue().Token);
@@ -869,25 +872,16 @@ namespace UndertaleModLib.Compiler
                     
                     if (IsNextTokenDiscard(TokenKind.Assign))
                     {
-                        Statement expr = ParseExpression();
+                        Statement expr = ParseExpression(context);
                         val.Children.Add(expr);
-                        Statement optimized = Optimize(expr);
-                        if (expr.Token.Kind == TokenKind.Constant && (expr.Kind != Statement.StatementKind.ExprConstant ||
-                             expr.Constant.kind == ExpressionConstant.Kind.Constant || expr.Constant.kind == ExpressionConstant.Kind.Number))
-                        {
-                            incrementingValue = (int)optimized.Constant.valueNumber;
-                        } else
-                        {
-                            ReportCodeError("Enum value must be an integer constant value.", expr.Token, true);
-                        }
                     }
 
                     if (values.ContainsKey(val.Text))
                     {
-                        ReportCodeError("Duplicate enum value found.", val.Token, true);
+                        ReportCodeError("Duplicate enum entry found.", val.Token, true);
                     }
 
-                    values[val.Text] = incrementingValue++;
+                    values[val.Text] = null;
 
                     if (!IsNextTokenDiscard(TokenKind.Comma))
                     {
@@ -896,7 +890,131 @@ namespace UndertaleModLib.Compiler
                     }
                 }
 
-                return result;*/
+                return result;
+            }
+
+            private static void ResolveEnumDeclarations(CompileContext context)
+            {
+                // First pass on all enums
+                context.FirstPassResolvingEnums = true;
+                foreach ((string Name, Statement Statement) enumDecl in context.EnumStatements)
+                {
+                    Dictionary<string, long?> values = context.Enums[enumDecl.Name];
+
+                    // Populate values (with null, if unknown in this first pass)
+                    long? incrementingValue = 0;
+                    foreach (Statement entry in enumDecl.Statement.Children)
+                    {
+                        if (entry.Children.Count == 1)
+                        {
+                            // Read expression, and if it's constant, assign it
+                            Statement value = entry.Children[0] = Optimize(context, entry.Children[0]);
+                            if (value.Kind == Statement.StatementKind.ExprConstant)
+                            {
+                                ExpressionConstant constant = value.Constant;
+                                if (constant == null)
+                                {
+                                    ReportCodeError("Invalid constant in enum", value.Token, false);
+                                    incrementingValue = null;
+                                }
+                                else
+                                {
+                                    if (constant.kind == ExpressionConstant.Kind.Number)
+                                    {
+                                        incrementingValue = (long)constant.valueNumber;
+                                    }
+                                    else if (constant.kind == ExpressionConstant.Kind.Int64)
+                                    {
+                                        incrementingValue = constant.valueInt64;
+                                    }
+                                    else
+                                    {
+                                        incrementingValue = null;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                incrementingValue = null;
+                            }
+                        }
+
+                        // Assign value to this entry
+                        values[entry.Token.Content] = incrementingValue;
+
+                        // Increment to next value (if known)
+                        if (incrementingValue is not null)
+                        {
+                            incrementingValue++;
+                        }
+                    }
+                }
+                context.FirstPassResolvingEnums = false;
+
+                // Second pass on all enums
+                foreach ((string Name, Statement Statement) enumDecl in context.EnumStatements)
+                {
+                    Dictionary<string, long?> values = context.Enums[enumDecl.Name];
+
+                    // Populate remaining values not covered in first pass
+                    long? incrementingValue = 0;
+                    foreach (Statement entry in enumDecl.Statement.Children)
+                    {
+                        long? fromFirstPass = values[entry.Token.Content];
+                        if (fromFirstPass is not null)
+                        {
+                            incrementingValue = fromFirstPass + 1;
+                            continue;
+                        }
+
+                        if (entry.Children.Count == 1)
+                        {
+                            // Read expression, and make sure it's constant this time
+                            Statement value = entry.Children[0] = Optimize(context, entry.Children[0]);
+                            if (value.Kind != Statement.StatementKind.ExprConstant)
+                            {
+                                ReportCodeError($"Enum entry \"{enumDecl.Name}.{entry.Token.Content}\" failed to resolve to a constant", false);
+                                continue;
+                            }
+                            else
+                            {
+                                ExpressionConstant constant = value.Constant;
+                                if (constant == null)
+                                {
+                                    ReportCodeError("Invalid constant in enum", value.Token, false);
+                                    incrementingValue = null;
+                                }
+                                else
+                                {
+                                    if (constant.kind == ExpressionConstant.Kind.Number)
+                                    {
+                                        incrementingValue = (long)constant.valueNumber;
+                                    }
+                                    else if (constant.kind == ExpressionConstant.Kind.Int64)
+                                    {
+                                        incrementingValue = constant.valueInt64;
+                                    }
+                                    else
+                                    {
+                                        incrementingValue = null;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (incrementingValue is null)
+                        {
+                            ReportCodeError($"Failed to resolve enum entry value \"{enumDecl.Name}.{entry.Token.Content}\"", false);
+                            incrementingValue = 0;
+                        }
+
+                        // Assign value to this entry
+                        values[entry.Token.Content] = incrementingValue;
+
+                        // Increment to next value
+                        incrementingValue++;
+                    }
+                }
             }
 
             private static Statement ParseDoUntil(CompileContext context)
@@ -1914,6 +2032,15 @@ namespace UndertaleModLib.Compiler
                         }
                         break;
                     case Statement.StatementKind.ExprVariableRef:
+                        // Optimize enums, if detected
+                        if (result.Children.Count == 2 &&
+                            result.Children[0].Kind == Statement.StatementKind.ExprSingleVariable && 
+                            result.Children[1].Kind == Statement.StatementKind.ExprSingleVariable)
+                        {
+                            result = OptimizeEnumConstant(context, result, result.Children[0], result.Children[1]);
+                            break;
+                        }    
+
                         for (int i = 0; i < result.Children.Count; i++)
                         {
                             if (result.Children[i].Children.Count != 2 || result.Children[i].Children[0].Kind != Statement.StatementKind.Token)
@@ -1974,6 +2101,30 @@ namespace UndertaleModLib.Compiler
                         ReportCodeError("Accessor has incorrect number of arguments", s.Children[0].Token, false);
                 }
                 return ai;
+            }
+
+            private static Statement OptimizeEnumConstant(CompileContext context, Statement original, Statement enumName, Statement enumEntry)
+            {
+                if (context.Enums.TryGetValue(enumName.Token.Content, out Dictionary<string, long?> values))
+                {
+                    if (values.TryGetValue(enumEntry.Token.Content, out long? value) && value is not null)
+                    {
+                        Statement newConstant = new(Statement.StatementKind.ExprConstant)
+                        {
+                            Constant = new ExpressionConstant((long)value)
+                        };
+                        return newConstant;
+                    }
+                    else
+                    {
+                        if (!context.FirstPassResolvingEnums)
+                        {
+                            ReportCodeError($"Failed to resolve enum entry \"{enumName.Token.Content}.{enumEntry.Token.Content}\"", false);
+                        }
+                    }
+                }
+
+                return original;
             }
 
             // This is probably the messiest function. I can't think of any easy ways to clean it right now though.

@@ -23,7 +23,9 @@ namespace UndertaleModLib.Compiler
         public int LastCompiledArgumentCount = 0;
         public Dictionary<string, string> LocalVars = new Dictionary<string, string>();
         public Dictionary<string, string> GlobalVars = new Dictionary<string, string>();
-        public Dictionary<string, Dictionary<string, int>> Enums = new Dictionary<string, Dictionary<string, int>>();
+        public List<(string, Compiler.Parser.Statement)> EnumStatements = new List<(string, Compiler.Parser.Statement)>();
+        public Dictionary<string, Dictionary<string, long?>> Enums = new Dictionary<string, Dictionary<string, long?>>();
+        public bool FirstPassResolvingEnums = false;
         public UndertaleCode OriginalCode;
         public IList<UndertaleVariable> OriginalReferencedLocalVars;
         public BuiltinList BuiltInList => Data.BuiltinList;
