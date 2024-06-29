@@ -658,7 +658,14 @@ namespace UndertaleModTool
                         {
                             if (SettingsWindow.NewDecompilerEnabled)
                             {
-                                decompiled = new Underanalyzer.Decompiler.DecompileContext(context, code).DecompileToString();
+                                Underanalyzer.Decompiler.DecompileSettings settings = new()
+                                {
+                                    UnknownArgumentNamePattern = "argument{0}",
+                                    RemoveSingleLineBlockBraces = true,
+                                    EmptyLineAroundBranchStatements = true,
+                                    EmptyLineBeforeSwitchCases = true
+                                };
+                                decompiled = new Underanalyzer.Decompiler.DecompileContext(context, code, settings).DecompileToString();
                             }
                             else
                             {

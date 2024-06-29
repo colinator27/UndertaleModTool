@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -482,11 +483,13 @@ namespace UndertaleModLib.Compiler
                         ExpressionConstant constant = null;
                         if (t.Content[0] == '$' || t.Content.StartsWith("0x", StringComparison.InvariantCulture))
                         {
+                            // General hex number literal
                             long val;
                             try
                             {
                                 val = Convert.ToInt64(t.Content.Substring(t.Content[0] == '$' ? 1 : 2), 16);
-                            } catch (Exception)
+                            }
+                            catch (Exception)
                             {
                                 ReportCodeError("Invalid hex literal.", t, false);
                                 constant = new ExpressionConstant(0);
@@ -502,11 +505,23 @@ namespace UndertaleModLib.Compiler
                                 constant = new ExpressionConstant((double)val);
                             }
                         }
+                        else if (t.Content[0] == '#')
+                        {
+                            // CSS color hex literal - needs to convert from RGB to BGR
+                            if (t.Content.Length != 7 ||
+                                !int.TryParse(t.Content[1..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int value))
+                            {
+                                ReportCodeError("Invalid CSS color hex literal. Must have exactly 6 hex characters.", t, false);
+                                constant = new ExpressionConstant(0);
+                                firstPass.Add(new Statement(TokenKind.ProcConstant, t, constant));
+                                continue;
+                            }
+                            constant = new ExpressionConstant((double)(((value & 0xff) << 16) | (value & 0xff00) | ((value & 0xff0000) >> 16)));
+                        }
                         else
                         {
-                            if (!double.TryParse(t.Content, System.Globalization.NumberStyles.Float,
-                                                 System.Globalization.CultureInfo.InvariantCulture,
-                                                 out double val))
+                            // Double-precision floating point literal
+                            if (!double.TryParse(t.Content, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
                             {
                                 ReportCodeError("Invalid double number format.", t, false);
                             }
