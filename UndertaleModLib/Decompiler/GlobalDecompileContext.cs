@@ -4,7 +4,7 @@ using System.Drawing;
 using System.IO;
 using Underanalyzer;
 using Underanalyzer.Decompiler;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 using UndertaleModLib.Models;
 using static UndertaleModLib.Models.UndertaleRoom;
 
@@ -45,7 +45,7 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
     public bool UsingTypedBooleans => Data?.IsVersionAtLeast(2, 3, 7) ?? false;
     public bool UsingAssetReferences => Data?.IsVersionAtLeast(2023, 8) ?? false;
     public bool UsingRoomInstanceReferences => Data?.IsVersionAtLeast(2024, 2) ?? false;
-    public MacroTypeRegistry MacroTypeRegistry => Data?.MacroTypeRegistry;
+    public GameSpecificRegistry GameSpecificRegistry => Data?.GameSpecificRegistry;
 
     public GlobalDecompileContext(UndertaleData data, bool enableStringLabels)
     {
@@ -63,7 +63,7 @@ public class GlobalDecompileContext : Underanalyzer.IGameContext
     }
 
     // Implementation of Underanalyzer methods
-    public string GetAssetName(int assetIndex, AssetType assetType)
+    public string GetAssetName(AssetType assetType, int assetIndex)
     {
         if (assetIndex < 0)
         {

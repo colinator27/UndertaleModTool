@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Underanalyzer.Decompiler;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 using UndertaleModLib.Compiler;
 using UndertaleModLib.Models;
 
@@ -340,9 +340,9 @@ namespace UndertaleModLib
         public IGlobalFunctions GlobalFunctions;
         
         /// <summary>
-        /// Registry for macro types and their resolvers, for this game.
+        /// Registry for macro types, their resolvers, and other data specific to this game.
         /// </summary>
-        public MacroTypeRegistry MacroTypeRegistry;
+        public GameSpecificRegistry GameSpecificRegistry;
 
         //Profile mode related properties
 
@@ -661,7 +661,7 @@ namespace UndertaleModLib
             // Clear other references
             FORM = null;
             GlobalFunctions = null;
-            MacroTypeRegistry = null;
+            GameSpecificRegistry = null;
             GMLCache = null;
             GMLCacheFailed = null;
             GMLCacheChanged = new();

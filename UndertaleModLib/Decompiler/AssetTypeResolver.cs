@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 using UndertaleModLib.Models;
 
 namespace UndertaleModLib.Decompiler
@@ -568,20 +568,20 @@ namespace UndertaleModLib.Decompiler
         // Properly initializes per-project/game
         public static void InitializeTypes(UndertaleData data)
         {
-            data.MacroTypeRegistry = new();
+            data.GameSpecificRegistry = new();
 
             // TODO: make proper file/manifest for all games to use, not just UT/DR, and also not these specific names
 
             // Read registry data files
             string lowerName = data?.GeneralInfo?.DisplayName?.Content.ToLower(CultureInfo.InvariantCulture) ?? "";
-            data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("gamemaker.json"));
+            data.GameSpecificRegistry.DeserializeFromJson(ReadMacroTypesFile("gamemaker.json"));
             if (lowerName.StartsWith("undertale", StringComparison.InvariantCulture))
             {
-                data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("undertale.json"));
+                data.GameSpecificRegistry.DeserializeFromJson(ReadMacroTypesFile("undertale.json"));
             }
             if (lowerName == "survey_program" || lowerName.StartsWith("deltarune", StringComparison.InvariantCulture))
             {
-                data.MacroTypeRegistry.DeserializeFromJson(ReadMacroTypesFile("deltarune.json"));
+                data.GameSpecificRegistry.DeserializeFromJson(ReadMacroTypesFile("deltarune.json"));
             }
 
             // TODO: gut the rest of the following code once all data is transferred
