@@ -98,6 +98,7 @@ namespace UndertaleModLib.Compiler
                     FunctionCall,
                     FunctionDef,
                     Throw,
+                    New,
                     Break,
                     Continue,
                     Exit,
@@ -119,6 +120,7 @@ namespace UndertaleModLib.Compiler
                     ExprVariableRef,
                     ExprSingleVariable,
                     ExprFuncName,
+                    ExprNew,
 
                     Token,
                     Discard // optimization stage produces this
@@ -658,6 +660,9 @@ namespace UndertaleModLib.Compiler
                     case TokenKind.KeywordFunction:
                         s = ParseFunction(context);
                         break;
+                    case TokenKind.KeywordNew:
+                        s = ParseNew(context, false);
+                        break;
                     case TokenKind.KeywordThrow:
                         s = ParseThrow(context);
                         break;
@@ -736,7 +741,7 @@ namespace UndertaleModLib.Compiler
 
                 if (IsNextTokenDiscard(TokenKind.Colon))
                 {
-                    result.Children.Insert(0, ParseFunctionCall(context));
+                    result.Children.Insert(0, ParseFunctionCall(context)); // TODO: variable function calls
                     result.Children.Insert(0, EnsureTokenKind(TokenKind.KeywordConstructor));
                 }
                 else if (IsNextToken(TokenKind.KeywordConstructor))
@@ -761,6 +766,15 @@ namespace UndertaleModLib.Compiler
             {
                 Statement result = new(Statement.StatementKind.Throw, EnsureTokenKind(TokenKind.KeywordThrow).Token);
                 result.Children.Add(ParseExpression(context));
+                return result;
+            }
+
+            private static Statement ParseNew(CompileContext context, bool expression)
+            {
+                Statement result = new(
+                    expression ? Statement.StatementKind.ExprNew : Statement.StatementKind.New, 
+                    EnsureTokenKind(TokenKind.KeywordNew).Token);
+                result.Children.Add(ParseFunctionCall(context, true)); // TODO: variable function calls
                 return result;
             }
 
@@ -1653,6 +1667,8 @@ namespace UndertaleModLib.Compiler
                         return ParseFunctionCall(context, true);
                     case TokenKind.KeywordFunction:
                         return ParseFunction(context);
+                    case TokenKind.KeywordNew:
+                        return ParseNew(context, true);
                     case TokenKind.ProcVariable:
                         {
                             Statement variableRef = ParseSingleVar(context);

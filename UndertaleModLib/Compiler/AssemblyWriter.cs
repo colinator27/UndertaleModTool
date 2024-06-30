@@ -1110,6 +1110,9 @@ namespace UndertaleModLib.Compiler
                             ArgCount = 1
                         });
                         break;
+                    case Parser.Statement.StatementKind.New:
+                        AssembleNew(cw, s, false);
+                        break;
                     default:
                         AssemblyWriterError(cw, "Expected a statement, none found", s.Token);
                         break;
@@ -1226,6 +1229,50 @@ namespace UndertaleModLib.Compiler
                     ArgCount = fc.Children.Count
                 });
                 cw.typeStack.Push(DataType.Variable);
+            }
+
+            private static void AssembleNew(CodeWriter cw, Parser.Statement e, bool expression)
+            {
+                // Needs to push args onto stack backwards
+                Parser.Statement fc = e.Children[0];
+                for (int i = fc.Children.Count - 1; i >= 0; i--)
+                {
+                    AssembleExpression(cw, fc.Children[i]);
+
+                    // Convert to Variable data type
+                    var typeToConvertFrom = cw.typeStack.Pop();
+                    if (typeToConvertFrom != DataType.Variable)
+                    {
+                        cw.Emit(Opcode.Conv, typeToConvertFrom, DataType.Variable);
+                    }
+                }
+
+                // Push reference to constructor function
+                cw.funcPatches.Add(new FunctionPatch()
+                {
+                    Target = cw.EmitRef(Opcode.Push, DataType.Int32),
+                    Name = fc.Text,
+                    ArgCount = -1
+                });
+                cw.Emit(Opcode.Conv, DataType.Int32, DataType.Variable);
+
+                // Create new object
+                cw.funcPatches.Add(new FunctionPatch()
+                {
+                    Target = cw.EmitRef(Opcode.Call, DataType.Int32),
+                    Name = "@@NewGMLObject@@",
+                    ArgCount = fc.Children.Count + 1
+                });
+
+                // If in expression, a variable data type is on the stack; otherwise, pop the unused data
+                if (expression)
+                {
+                    cw.typeStack.Push(DataType.Variable);
+                }
+                else
+                {
+                    cw.Emit(Opcode.Popz, DataType.Variable);
+                }
             }
 
             private static void AssembleExpression(CodeWriter cw, Parser.Statement e, Parser.Statement funcDefName = null)
@@ -1441,6 +1488,9 @@ namespace UndertaleModLib.Compiler
                             cw.Emit(Opcode.Dup, DataType.Variable).Extra = 0;
                             cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-1; // todo: -6 sometimes?
                         }
+                        break;
+                    case Parser.Statement.StatementKind.ExprNew:
+                        AssembleNew(cw, e, true);
                         break;
                     case Parser.Statement.StatementKind.ExprBinaryOp:
                         {
