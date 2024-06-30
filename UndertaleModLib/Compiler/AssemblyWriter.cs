@@ -1503,7 +1503,10 @@ namespace UndertaleModLib.Compiler
                             });
                             cw.typeStack.Push(DataType.Variable);
                             cw.Emit(Opcode.Dup, DataType.Variable).Extra = 0;
-                            cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-1; // todo: -6 sometimes?
+                            if (cw.compileContext.Data.IsVersionAtLeast(2024) || cw.compileContext.OriginalCode.Name.Content == $"gml_GlobalScript_{funcDefName.Text}")
+                                cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-1;
+                            else
+                                cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-6;
                         }
                         break;
                     case Parser.Statement.StatementKind.ExprNew:
