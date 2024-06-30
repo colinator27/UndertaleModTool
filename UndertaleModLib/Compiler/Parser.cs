@@ -238,6 +238,11 @@ namespace UndertaleModLib.Compiler
                 }
             }
 
+            public class FunctionParseInfo
+            {
+                public HashSet<string> LocalVars { get; } = new();
+            }
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Statement EnsureStatementKind(Statement.StatementKind kind)
             {
@@ -442,6 +447,8 @@ namespace UndertaleModLib.Compiler
                 context.LocalVars.Clear();
                 if ((context.Data?.GeneralInfo?.BytecodeVersion ?? 15) >= 15)
                     context.LocalVars["arguments"] = "arguments";
+                context.FunctionParseStack.Clear();
+                context.FunctionParseInfo.Clear();
                 context.GlobalVars.Clear();
                 context.EnumStatements.Clear();
                 context.Enums.Clear();
@@ -693,6 +700,10 @@ namespace UndertaleModLib.Compiler
                 bool expressionMode = true;
                 Statement destination = null;
 
+                FunctionParseInfo info = new();
+                context.FunctionParseStack.Push(info);
+                context.FunctionParseInfo[result] = info;
+
                 if (GetNextTokenKind() == TokenKind.ProcFunction)
                 {
                     expressionMode = false;
@@ -750,6 +761,9 @@ namespace UndertaleModLib.Compiler
                 }
 
                 result.Children.Add(ParseBlock(context));
+
+                context.FunctionParseStack.Pop();
+
                 if (expressionMode)
                     return result;
                 else // Whatever you call non-anonymous definitions
@@ -1171,6 +1185,10 @@ namespace UndertaleModLib.Compiler
                     Statement variable = new Statement(var) { Kind = Statement.StatementKind.ExprSingleVariable };
                     result.Children.Add(variable);
                     context.LocalVars[var.Text] = var.Text;
+                    if (context.FunctionParseStack.Count > 0)
+                    {
+                        context.FunctionParseStack.Peek().LocalVars.Add(var.Text);
+                    }
 
                     // Read assignments if necessary
                     if (remainingStageOne.Count > 0 && IsNextToken(TokenKind.Assign))
@@ -1754,6 +1772,18 @@ namespace UndertaleModLib.Compiler
                         // There's nothing to optimize here, don't waste time checking
                         return s;
                     }
+                    else if (s.Kind == Statement.StatementKind.FunctionDef)
+                    {
+                        // Maintain a reference for function declarations
+                        result = s;
+                        for (int i = 0; i < result.Children.Count; i++)
+                        {
+                            if (result.Children[i] == null)
+                                result.Children[i] = new Statement(Statement.StatementKind.Discard);
+                            else
+                                result.Children[i] = Optimize(context, result.Children[i]);
+                        }
+                    }
                     else
                     {
                         result = new Statement(s);
@@ -1765,7 +1795,8 @@ namespace UndertaleModLib.Compiler
                                 result.Children[i] = Optimize(context, result.Children[i]);
                         }
                     }
-                } else
+                }
+                else
                     result = new Statement(s);
                 Statement child0 = result.Children[0];
 

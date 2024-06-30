@@ -23,6 +23,8 @@ namespace UndertaleModLib.Compiler
         public int LastCompiledArgumentCount = 0;
         public Dictionary<string, string> LocalVars = new Dictionary<string, string>();
         public Dictionary<string, string> GlobalVars = new Dictionary<string, string>();
+        public Stack<Compiler.Parser.FunctionParseInfo> FunctionParseStack = new();
+        public Dictionary<Compiler.Parser.Statement, Compiler.Parser.FunctionParseInfo> FunctionParseInfo = new();
         public List<(string, Compiler.Parser.Statement)> EnumStatements = new List<(string, Compiler.Parser.Statement)>();
         public Dictionary<string, Dictionary<string, long?>> Enums = new Dictionary<string, Dictionary<string, long?>>();
         public bool FirstPassResolvingEnums = false;
