@@ -97,6 +97,7 @@ namespace UndertaleModLib.Compiler
                     SwitchDefault,
                     FunctionCall,
                     FunctionDef,
+                    Throw,
                     Break,
                     Continue,
                     Exit,
@@ -657,6 +658,9 @@ namespace UndertaleModLib.Compiler
                     case TokenKind.KeywordFunction:
                         s = ParseFunction(context);
                         break;
+                    case TokenKind.KeywordThrow:
+                        s = ParseThrow(context);
+                        break;
                     default:
                         // Assumes it's a variable assignment
                         if (remainingStageOne.Count > 0)
@@ -741,6 +745,13 @@ namespace UndertaleModLib.Compiler
                     trueResult.Children.Add(result);
                     return trueResult;
                 }
+            }
+
+            private static Statement ParseThrow(CompileContext context)
+            {
+                Statement result = new(Statement.StatementKind.Throw, EnsureTokenKind(TokenKind.KeywordThrow).Token);
+                result.Children.Add(ParseExpression(context));
+                return result;
             }
 
             private static Statement ParseFor(CompileContext context)

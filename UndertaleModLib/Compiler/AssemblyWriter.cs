@@ -1084,6 +1084,20 @@ namespace UndertaleModLib.Compiler
                     case Parser.Statement.StatementKind.Enum:
                         // No assembly logic for this
                         break;
+                    case Parser.Statement.StatementKind.Throw:
+                        AssembleExpression(cw, s.Children[0]);
+                        if (cw.typeStack.Peek() != DataType.Variable)
+                        {
+                            cw.Emit(Opcode.Conv, cw.typeStack.Pop(), DataType.Variable);
+                            cw.typeStack.Push(DataType.Variable);
+                        }
+                        cw.funcPatches.Add(new FunctionPatch()
+                        {
+                            Target = cw.EmitRef(Opcode.Call, DataType.Int32),
+                            Name = "@@throw@@",
+                            ArgCount = 1
+                        });
+                        break;
                     default:
                         AssemblyWriterError(cw, "Expected a statement, none found", s.Token);
                         break;
