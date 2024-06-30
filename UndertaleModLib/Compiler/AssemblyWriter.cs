@@ -236,7 +236,17 @@ namespace UndertaleModLib.Compiler
                                         else
                                             patch.Target.Value = new Reference<UndertaleVariable>(def, patch.VarType);
                                         if (patch.VarType == VariableType.Normal)
-                                            patch.Target.TypeInst = patch.InstType;
+                                        {
+                                            if (patch.InstType == InstanceType.Self && compileContext.Data.IsVersionAtLeast(2024, 2))
+                                            {
+                                                // For some reason, 2024 versions seem to use builtin instead of self, for simple variables
+                                                patch.Target.TypeInst = InstanceType.Builtin;
+                                            }
+                                            else
+                                            {
+                                                patch.Target.TypeInst = patch.InstType;
+                                            }
+                                        }
                                     }
                                 }
                             }
