@@ -693,11 +693,25 @@ namespace UndertaleModLib.Compiler
 
                 EnsureTokenKind(TokenKind.OpenParen);
 
+                int numNamedArguments = 0;
                 while (remainingStageOne.Count > 0 && !hasError && !IsNextToken(TokenKind.EOF, TokenKind.CloseParen))
                 {
-                    Statement expr = ParseExpression(context);
+                    numNamedArguments++;
+                    Statement expr = EnsureTokenKind(TokenKind.ProcVariable);
                     if (expr != null)
                         args.Children.Add(expr);
+
+                    if (IsNextTokenDiscard(TokenKind.Assign))
+                    {
+                        Statement defaultValue = ParseExpression(context);
+                        args.Children.Add(defaultValue);
+                    }
+                    else
+                    {
+                        // No default value supplied
+                        args.Children.Add(null);
+                    }
+
                     if (!IsNextTokenDiscard(TokenKind.Comma))
                     {
                         if (!IsNextToken(TokenKind.CloseParen))
@@ -709,9 +723,14 @@ namespace UndertaleModLib.Compiler
                 }
                 result.Children.Add(args);
 
+                if (numNamedArguments > 16)
+                {
+                    ReportCodeError("Only 16 named arguments are allowed per function.", result.Token, false);
+                }
+
                 if (EnsureTokenKind(TokenKind.CloseParen) == null) return null;
 
-                result.Children.Add(ParseStatement(context));
+                result.Children.Add(ParseBlock(context));
                 if (expressionMode)
                     return result;
                 else // Whatever you call non-anonymous definitions
@@ -2078,7 +2097,37 @@ namespace UndertaleModLib.Compiler
                             ReportCodeError("Case argument must be constant.", result.Token, false);
                         }
                         break;
-                    // todo: parse enum references
+                    case Statement.StatementKind.FunctionDef:
+                        {
+                            // Produce default argument assignments, if they exist
+                            Statement args = child0, body = result.Children[1];
+                            for (int i = args.Children.Count - 2; i >= 0; i -= 2)
+                            {
+                                Statement defaultValue = args.Children[i + 1];
+                                if (defaultValue is not null && defaultValue.Kind != Statement.StatementKind.Discard)
+                                {
+                                    Statement ifStmt = new(Statement.StatementKind.If);
+                                    Statement compare = new(Statement.StatementKind.ExprBinaryOp, new Lexer.Token(TokenKind.CompareEqual));
+                                    Statement argVariable = new(Statement.StatementKind.ExprSingleVariable, new Lexer.Token(TokenKind.ProcVariable, $"argument{i / 2}"));
+                                    Statement undefinedVariable = new(Statement.StatementKind.ExprSingleVariable, new Lexer.Token(TokenKind.ProcVariable, "undefined"));
+                                    compare.Children.Add(argVariable);
+                                    compare.Children.Add(undefinedVariable);
+                                    ifStmt.Children.Add(compare);
+                                    Statement assign = new(Statement.StatementKind.Assign);
+                                    assign.Children.Add(argVariable);
+                                    assign.Children.Add(new Statement(Statement.StatementKind.Assign, new Lexer.Token(TokenKind.Assign)));
+                                    assign.Children.Add(defaultValue);
+                                    ifStmt.Children.Add(assign);
+                                    body.Children.Insert(0, ifStmt);
+                                    args.Children.RemoveAt(i + 1);
+                                }
+                                else
+                                {
+                                    args.Children.RemoveAt(i + 1);
+                                }
+                            }
+                        }
+                        break;
                 }
                 return result;
             }
