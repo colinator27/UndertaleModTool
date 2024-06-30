@@ -734,6 +734,16 @@ namespace UndertaleModLib.Compiler
 
                 if (EnsureTokenKind(TokenKind.CloseParen) == null) return null;
 
+                if (IsNextTokenDiscard(TokenKind.Colon))
+                {
+                    result.Children.Insert(0, ParseFunctionCall(context));
+                    result.Children.Insert(0, EnsureTokenKind(TokenKind.KeywordConstructor));
+                }
+                else if (IsNextToken(TokenKind.KeywordConstructor))
+                {
+                    result.Children.Insert(0, EnsureTokenKind(TokenKind.KeywordConstructor));
+                }
+
                 result.Children.Add(ParseBlock(context));
                 if (expressionMode)
                     return result;
@@ -2111,7 +2121,8 @@ namespace UndertaleModLib.Compiler
                     case Statement.StatementKind.FunctionDef:
                         {
                             // Produce default argument assignments, if they exist
-                            Statement args = child0, body = result.Children[1];
+                            int childrenOffset = result.Children.Count - 2;
+                            Statement args = result.Children[childrenOffset], body = result.Children[childrenOffset + 1];
                             for (int i = args.Children.Count - 2; i >= 0; i -= 2)
                             {
                                 Statement defaultValue = args.Children[i + 1];

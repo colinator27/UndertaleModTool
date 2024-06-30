@@ -1250,8 +1250,6 @@ public class UndertaleCode : UndertaleNamedResource, UndertaleObjectWithBlobs, I
     /// </summary>
     public ushort ArgumentsCount { get; set; }
 
-
-    public bool WeirdLocalsFlag { get; set; }
     public uint Offset { get; set; }
 
 

@@ -526,6 +526,7 @@ namespace UndertaleModLib.Compiler
                     "struct" => new Token(Token.TokenKind.KeywordStruct, cr.GetPositionInfo(index)),
                     "function" when CompileContext.GMS2_3 => new Token(Token.TokenKind.KeywordFunction, cr.GetPositionInfo(index)),
                     "throw" when CompileContext.GMS2_3 => new Token(Token.TokenKind.KeywordThrow, cr.GetPositionInfo(index)),
+                    "constructor" when CompileContext.GMS2_3 => new Token(Token.TokenKind.KeywordConstructor, cr.GetPositionInfo(index)),
                     "for" => new Token(Token.TokenKind.KeywordFor, cr.GetPositionInfo(index)),
                     "case" => new Token(Token.TokenKind.KeywordCase, cr.GetPositionInfo(index)),
                     "switch" => new Token(Token.TokenKind.KeywordSwitch, cr.GetPositionInfo(index)),
@@ -847,6 +848,7 @@ namespace UndertaleModLib.Compiler
                     KeywordStruct, // Apparently this exists
                     KeywordFunction,
                     KeywordThrow,
+                    KeywordConstructor,
                     OpenBlock, // {
                     CloseBlock, // }
                     OpenArray, // [

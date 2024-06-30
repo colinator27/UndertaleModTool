@@ -271,7 +271,8 @@ namespace UndertaleModLib.Compiler
                                 UndertaleScript childScript = new()
                                 {
                                     Name = childName,
-                                    Code = childEntry
+                                    Code = childEntry,
+                                    IsConstructor = patch.isNewConstructor
                                 };
                                 compileContext.Data.Scripts.Add(childScript);
 
@@ -387,6 +388,7 @@ namespace UndertaleModLib.Compiler
                 public int ArgCount;
                 public uint Offset;
                 public bool isNewFunc = false;
+                public bool isNewConstructor = false;
             }
 
             public class StringPatch
@@ -1307,10 +1309,22 @@ namespace UndertaleModLib.Compiler
                         break;
                     case Parser.Statement.StatementKind.FunctionDef:
                         {
-                            if (e.Children.Count != 2)
+                            if (e.Children.Count < 2 || e.Children.Count > 4)
                             {
                                 AssemblyWriterError(cw, "Malformed function assignment.", e.Token);
                                 break;
+                            }
+
+                            bool isConstructor = e.Children.Count >= 3;
+                            Parser.Statement baseCall = null;
+                            if (isConstructor)
+                            {
+                                e.Children.RemoveAt(0);
+                                if (e.Children.Count >= 3)
+                                {
+                                    baseCall = e.Children[0];
+                                    e.Children.RemoveAt(0);
+                                }
                             }
                             
                             Patch endPatch = Patch.Start();
@@ -1333,6 +1347,12 @@ namespace UndertaleModLib.Compiler
                                 childEntry.Offset = cw.offset * 4;
                                 childEntry.ArgumentsCount = (ushort)e.Children[0].Children.Count;
                                 childEntry.LocalsCount = cw.compileContext.OriginalCode.LocalsCount; // todo: use just the locals for the individual script
+
+                                UndertaleScript script = cw.compileContext.Data.Scripts.ByName(childEntry.Name.Content);
+                                if (script is not null)
+                                {
+                                    script.IsConstructor = isConstructor;
+                                }
                             }
                             else // we're making a new function baby
                             {
@@ -1341,7 +1361,8 @@ namespace UndertaleModLib.Compiler
                                     Name = funcDefName.Text,
                                     Offset = cw.offset * 4,
                                     ArgCount = (ushort)e.Children[0].Children.Count,
-                                    isNewFunc = true
+                                    isNewFunc = true,
+                                    isNewConstructor = isConstructor
                                 });
                             }
 
@@ -1352,6 +1373,24 @@ namespace UndertaleModLib.Compiler
                             cw.funcContexts.Push(new FunctionContext(cw.loopContexts, cw.otherContexts, namedArgs));
                             cw.loopContexts = new();
                             cw.otherContexts = new();
+
+                            if (baseCall is not null)
+                            {
+                                AssembleFunctionCall(cw, baseCall);
+                                cw.funcPatches.Add(new FunctionPatch()
+                                {
+                                    Target = cw.EmitRef(Opcode.Push, DataType.Int32),
+                                    Name = baseCall.Text,
+                                    ArgCount = -1
+                                });
+                                cw.Emit(Opcode.Conv, DataType.Int32, DataType.Variable);
+                                cw.funcPatches.Add(new FunctionPatch()
+                                {
+                                    Target = cw.EmitRef(Opcode.Call, DataType.Int32),
+                                    Name = "@@CopyStatic@@",
+                                    ArgCount = 1
+                                });
+                            }
 
                             AssembleStatement(cw, e.Children[1]); // body
                             AssembleExit(cw);
@@ -1368,8 +1407,20 @@ namespace UndertaleModLib.Compiler
                                 ArgCount = -1
                             });
                             cw.Emit(Opcode.Conv, DataType.Int32, DataType.Variable);
-                            cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-1;
-                            cw.Emit(Opcode.Conv, DataType.Int32, DataType.Variable);
+                            if (isConstructor)
+                            {
+                                cw.funcPatches.Add(new FunctionPatch()
+                                {
+                                    Target = cw.EmitRef(Opcode.Call, DataType.Int32),
+                                    Name = "@@NullObject@@",
+                                    ArgCount = 0
+                                });
+                            }
+                            else
+                            {
+                                cw.Emit(Opcode.PushI, DataType.Int16).Value = (short)-1;
+                                cw.Emit(Opcode.Conv, DataType.Int32, DataType.Variable);
+                            }
                             cw.funcPatches.Add(new FunctionPatch()
                             {
                                 Target = cw.EmitRef(Opcode.Call, DataType.Int32),
