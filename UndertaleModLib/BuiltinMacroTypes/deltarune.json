@@ -358,8 +358,20 @@
       "gml_Script_scr_draw_background_ps4": [ "Asset.Sprite", null, null ],
       "gml_Script_scr_draw_sprite_crop_ext": [ "Asset.Sprite", null, null, null, null, null, null, null, null, null, null, null ],
       "gml_Script_scr_textsetup": [ "Asset.Font", "Constant.Color", null, null, null, null, null, "Asset.Sound" ],
-      "gml_Script_draw_sprite_ext_glow": [ "Asset.Sprite", null, null, null, null, null, null, "Constant.Color", null, null, null, null, null ],
-      "gml_Script_draw_sprite_part_ext_glow": [ "Asset.Sprite", null, null, null, null, null, null, "Constant.Color", null, null, null, null, null ],
+      "gml_Script_draw_sprite_ext_glow": {
+        "MacroType": "Union",
+        "Macros": [
+          [ "Asset.Sprite", null, null, null, null, null, null, "Constant.Color", null ],
+          [ "Asset.Sprite", null, null, null, null, null, null, "Constant.Color", null, "Constant.Color" ]
+        ]
+      },
+      "gml_Script_draw_sprite_part_ext_glow": {
+        "MacroType": "Union",
+        "Macros": [
+          [ "Asset.Sprite", null, null, null, null, null, null, null, null, null, "Constant.Color", null ],
+          [ "Asset.Sprite", null, null, null, null, null, null, null, null, null, "Constant.Color", null, "Constant.Color" ]
+        ]
+      },
       "gml_Script_scr_draw_outline_ext": [ "Asset.Sprite", null, null, null, null, null, null, "Constant.Color", null, null ],
       "gml_Script_scr_guardpeek": [ "Asset.Object" ],
       "gml_Script_instance_create_ch1": [ null, null, "Asset.Object" ],
@@ -374,6 +386,8 @@
       "gml_Script_draw_background_tiled_ext_ch1": [ "Asset.Sprite", null, null, null, null, "Constant.Color", null ],
       "gml_Script_scr_draw_background_ps4_ch1": [ "Asset.Sprite", null, null ],
       "gml_Script_scr_textsetup_ch1": [ "Asset.Font", "Constant.Color", null, null, null, null, null, "Asset.Sound" ],
+      "gml_Script_scr_custom_afterimage": [ "Asset.Object" ],
+      "gml_Script_scr_custom_afterimage_ext": [ "Asset.Object", "Asset.Sprite", null, null, null, null, null ],
       "gml_Script_c_var_instance": [
         null,
         {
