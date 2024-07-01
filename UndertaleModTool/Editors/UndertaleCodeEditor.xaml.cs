@@ -513,11 +513,11 @@ namespace UndertaleModTool
         }
 
         public static Dictionary<string, string> gettext = null;
-        private void UpdateGettext(UndertaleCode gettextCode)
+        private void UpdateGettext(UndertaleData data, UndertaleCode gettextCode)
         {
             gettext = new Dictionary<string, string>();
             string[] decompilationOutput;
-            GlobalDecompileContext context = new GlobalDecompileContext(null, false);
+            GlobalDecompileContext context = new GlobalDecompileContext(data, false);
             if (!SettingsWindow.ProfileModeEnabled)
             {
                 //decompilationOutput = Decompiler.Decompile(gettextCode, new GlobalDecompileContext(null, false)).Replace("\r\n", "\n").Split('\n');
@@ -681,7 +681,7 @@ namespace UndertaleModTool
                     }
 
                     if (gettextCode != null)
-                        UpdateGettext(gettextCode);
+                        UpdateGettext(dataa, gettextCode);
 
                     try
                     {
