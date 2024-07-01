@@ -618,7 +618,13 @@
       "instance_copy": [ "Bool" ],
       "instance_create": [ null, null, "Asset.Object" ],
       "gml_Script_instance_create": [ null, null, "Asset.Object" ],
-      "instance_destroy": [ "Asset.Object", "Bool" ],
+      "instance_destroy": {
+        "MacroType": "Union",
+        "Macros": [
+          [ "Asset.Object" ],
+          [ "Asset.Object", "Bool" ]
+        ]
+      },
       "instance_exists": [ "Asset.Object" ],
       "instance_find": [ "Asset.Object", null ],
       "instance_furthest": [ null, null, "Asset.Object" ],
