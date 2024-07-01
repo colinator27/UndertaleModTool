@@ -1255,7 +1255,8 @@
       "audio_effect_create": [ "Enum.AudioEffectType" ]
     },
     "FunctionReturn": {
-
+      "draw_getpixel": "Constant.Color",
+      "draw_getpixel_ext": "Constant.Color"
     }
   },
   "CodeEntryNames": {
