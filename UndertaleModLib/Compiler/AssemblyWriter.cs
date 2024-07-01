@@ -594,7 +594,7 @@ namespace UndertaleModLib.Compiler
                 return cw;
             }
 
-            private static void AssembleStatement(CodeWriter cw, Parser.Statement s, int remaining = -1)
+            private static void AssembleStatement(CodeWriter cw, Parser.Statement s)
             {
                 switch (s.Kind)
                 {
@@ -604,7 +604,7 @@ namespace UndertaleModLib.Compiler
                         {
                             for (int i = 0; i < s.Children.Count; i++)
                             {
-                                AssembleStatement(cw, s.Children[i], s.Children.Count - i);
+                                AssembleStatement(cw, s.Children[i]);
                             }
                         }
                         break;
@@ -648,6 +648,18 @@ namespace UndertaleModLib.Compiler
                                     break;
                             }
                         }
+                        break;
+                    case Parser.Statement.StatementKind.FunctionDefAssign:
+                        AssembleExpression(cw, s.Children[1], s.Children[0]);
+                        cw.typeStack.Pop();
+                        cw.varPatches.Add(new VariablePatch()
+                        {
+                            Target = cw.EmitRef(Opcode.Pop, DataType.Variable, DataType.Variable),
+                            Name = s.Children[0].Text,
+                            InstType = InstanceType.Self,
+                            VarType = VariableType.StackTop
+                        });
+                        cw.Emit(Opcode.Popz, DataType.Variable);
                         break;
                     case Parser.Statement.StatementKind.Pre:
                         AssemblePostOrPre(cw, s, false, false);
@@ -2420,15 +2432,10 @@ namespace UndertaleModLib.Compiler
                 }
                 else if (s.Kind == Parser.Statement.StatementKind.ExprFuncName)
                 {
-                    // Until further notice, I'm assuming this only comes up in 2.3 script definition.
-                    cw.varPatches.Add(new VariablePatch()
-                    {
-                        Target = cw.EmitRef(Opcode.Pop, DataType.Variable, DataType.Variable),
-                        Name = s.Text,
-                        InstType = InstanceType.Self,
-                        VarType = VariableType.StackTop
-                    });
-                    cw.Emit(Opcode.Popz, DataType.Variable);
+                    // Technically not fully valid syntax, but permit it as a simple variable
+                    Parser.Statement fix = new Parser.Statement(s);
+                    fix.Kind = Parser.Statement.StatementKind.ExprSingleVariable;
+                    AssembleStoreVariable(cw, fix, typeToStore, skip, duplicate);
                 }
                 else
                 {

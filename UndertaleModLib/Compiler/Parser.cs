@@ -97,6 +97,7 @@ namespace UndertaleModLib.Compiler
                     SwitchDefault,
                     FunctionCall,
                     FunctionDef,
+                    FunctionDefAssign,
                     Throw,
                     New,
                     Break,
@@ -768,9 +769,8 @@ namespace UndertaleModLib.Compiler
                     return result;
                 else // Whatever you call non-anonymous definitions
                 {
-                    Statement trueResult = new Statement(Statement.StatementKind.Assign, new Lexer.Token(TokenKind.Assign));
+                    Statement trueResult = new Statement(Statement.StatementKind.FunctionDefAssign);
                     trueResult.Children.Add(destination);
-                    trueResult.Children.Add(new Statement(Statement.StatementKind.Token, trueResult.Token));
                     trueResult.Children.Add(result);
                     return trueResult;
                 }
